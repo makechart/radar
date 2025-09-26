@@ -1,7 +1,7 @@
 module.exports =
   pkg:
     name: 'radar', version: '0.0.1'
-    extend: {name: "base", version: "0.0.1"}
+    extend: {name: "@makechart/base"}
     dependencies: []
   init: ({root, context, pubsub}) ->
     pubsub.fire \init, mod: mod {context} .then ~> it.0
