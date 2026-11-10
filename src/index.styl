@@ -1,0 +1,31 @@
+.pdl-layout > div[data-type=layout]
+  display: grid
+  grid-template-columns: minmax(0, 1fr) fit-content(10em)
+  grid-template-rows: minmax(0, 1fr)
+  padding: .25em
+  .pdl-cell[data-name=legend]
+    padding-left: 1em
+
+/* 圖例放下方: 雷達圖兩側要留給軸標籤, 窄的時候一律走這個版面 */
+.pdl-layout.legend-bottom > div[data-type=layout]
+  grid-template-columns: minmax(0, 1fr)
+  grid-template-rows: minmax(0, 1fr) fit-content(35%)
+  .pdl-cell[data-name=legend]
+    padding-left: 0
+    padding-top: .75em
+
+[data-name=legend]
+  font-size: .85em
+
+.radar-label, .radar-tick
+  pointer-events: none
+  user-select: none
+
+/* 刻度字描一圈背景色, 蓋在系列上才讀得到 */
+.radar-tick
+  paint-order: stroke
+  stroke-linejoin: round
+
+/* hover 一個系列時其它系列淡掉. css 蓋過 opacity 屬性, 補間照跑 */
+.radar-hover .series:not(.hl)
+  opacity: .25
