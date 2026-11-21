@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.4
+
+ - add `desc` ( en / zh-TW ) to the config items, shown under the label in the makechart style panel
+
+
 ## v0.0.3
 
  - redesign the chart: concentric grid ( polygon or circle ) with optional stripes, axis lines, axis labels

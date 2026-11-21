@@ -201,12 +201,14 @@ mod = ({context, t}) ->
   config: do ->
     N = (s) -> t s
     # values: 選項. [value, 英文標籤], 標籤先翻譯 ( konfig 的 widget 拿不到圖表自己的 i18n )
-    choice = (name, list, def) ->
-      {type: \choice, name: N(name), default: def, values: list.map -> {value: it.0, name: N(it.1)}}
-    number = (name, def, min, max, step) -> {type: \number, name: N(name), default: def, min, max, step}
-    bool = (name, def) -> {type: \boolean, name: N(name), default: def}
+    # desc: 選填, 編輯器樣式面板在名稱下方顯示的說明 {en, "zh-TW"}
+    d = (desc) -> if desc => {desc} else {}
+    choice = (name, list, def, desc) ->
+      {type: \choice, name: N(name), default: def, values: list.map -> {value: it.0, name: N(it.1)}} <<< d(desc)
+    number = (name, def, min, max, step, desc) -> {type: \number, name: N(name), default: def, min, max, step} <<< d(desc)
+    bool = (name, def, desc) -> {type: \boolean, name: N(name), default: def} <<< d(desc)
     color = (def = \currentColor) -> {type: \color, name: N("Color"), default: def}
-    fmt = (def) -> {type: \format, name: N("Number format"), default: def}
+    fmt = (def, desc) -> {type: \format, name: N("Number format"), default: def} <<< d(desc)
     c = chart.utils.config.from {preset: \default, legend: \legend, tip: \tip}
     # 雷達圖兩側要留給軸標籤, 圖例預設放下面
     c.legend.position.default = \bottom
@@ -214,54 +216,55 @@ mod = ({context, t}) ->
     c.tip.format.default = ''
     c <<<
       grid:
-        shape: choice "Shape", [<[polygon Polygon]>, <[circle Circle]>], \polygon
-        levels: number "Levels", 4, 1, 20, 1
+        shape: choice "Shape", [<[polygon Polygon]>, <[circle Circle]>], \polygon, {en: "shape of the grid rings; always a circle when there are fewer than three axes", "zh-TW": "格線圈的形狀；軸少於三個時一律是圓形"}
+        levels: number "Levels", 4, 1, 20, 1, {en: "number of grid rings; the value range is split evenly into this many steps", "zh-TW": "格線的圈數；數值範圍平均分成這麼多段"}
         color: color!
-        opacity: number "Opacity", 0.18, 0, 1, 0.01
-        stroke-width: number "Line width", 1, 0, 10, 0.5
-        stripe: number "Stripe opacity", 0.03, 0, 1, 0.01
+        opacity: number "Opacity", 0.18, 0, 1, 0.01, {en: "opacity of the grid rings ( 0 to 1 )", "zh-TW": "格線圈的不透明度 ( 0 到 1 )"}
+        stroke-width: number "Line width", 1, 0, 10, 0.5, {en: "line width of the grid rings ( px )", "zh-TW": "格線圈的線寬 ( px )"}
+        stripe: number "Stripe opacity", 0.03, 0, 1, 0.01, {en: "opacity of the shading in every other ring; 0 turns it off ( 0 to 1 )", "zh-TW": "每隔一圈塗上的底色的不透明度；0 表示不塗 ( 0 到 1 )"}
       axis:
-        show: bool "Show", true
+        show: bool "Show", true, {en: "draw a line from the center out to each axis", "zh-TW": "從圓心畫線到每個軸"}
         color: color!
-        opacity: number "Opacity", 0.18, 0, 1, 0.01
-        stroke-width: number "Line width", 1, 0, 10, 0.5
+        opacity: number "Opacity", 0.18, 0, 1, 0.01, {en: "opacity of the axis lines ( 0 to 1 )", "zh-TW": "軸線的不透明度 ( 0 到 1 )"}
+        stroke-width: number "Line width", 1, 0, 10, 0.5, {en: "line width of the axis lines ( px )", "zh-TW": "軸線的線寬 ( px )"}
       label:
-        show: bool "Show", true
+        show: bool "Show", true, {en: "show the axis names around the grid", "zh-TW": "在格線外圍標出各軸的名稱"}
         size: number "Font size (em)", 0.8, 0.3, 4, 0.05
         color: color!
-        format: fmt ''
+        format: fmt '', {en: "number format for axis names that are numbers; empty shows them as is", "zh-TW": "軸名稱是數字時的格式；空白表示照原樣顯示"}
         padding: number "Distance from grid (px)", 8, 0, 64, 1
-        max-width: number "Max width (em)", 10, 2, 60, 0.5
+        max-width: number "Max width (em)", 10, 2, 60, 0.5, {en: "longer names are cut short with an ellipsis; the limit shrinks further when the chart is small ( em )", "zh-TW": "超過的名稱會截斷並加上省略號；圖太小時會再縮短 ( em )"}
       tick:
-        show: bool "Show", true
+        show: bool "Show", true, {en: "show the value of each ring along the first axis", "zh-TW": "沿著第一個軸標出每一圈的數值"}
         size: number "Font size (em)", 0.65, 0.3, 4, 0.05
         color: color!
-        format: fmt ''
+        format: fmt '', {en: "number format of the tick values; empty picks one by the size of the values", "zh-TW": "刻度數值的格式；空白表示依數值大小自動決定"}
       orientation:
-        start-angle: number "Start angle", 0, -360, 360, 1
-        direction: choice "Direction", [<[cw Clockwise]>, <[ccw Counter-clockwise]>], \cw
+        start-angle: number "Start angle", 0, -360, 360, 1, {en: "direction of the first axis, measured clockwise from the top ( degrees )", "zh-TW": "第一個軸的方向，從正上方順時針量 ( 度 )"}
+        direction: choice "Direction", [<[cw Clockwise]>, <[ccw Counter-clockwise]>], \cw, {en: "which way the axes go around from the first one", "zh-TW": "從第一個軸開始，其它軸繞行的方向"}
       domain:
-        min: choice "Minimum", [["zero", "From zero"], ["data", "From data minimum"], ["custom", "Custom"]], \zero
-        min-value: number "Custom minimum", 0, -1e12, 1e12, 0.01
-        max: choice "Maximum", [["auto", "Auto"], ["custom", "Custom"]], \auto
-        max-value: number "Custom maximum", 100, -1e12, 1e12, 0.01
-        nice: bool "Round to nice values", true
+        min: choice "Minimum", [["zero", "From zero"], ["data", "From data minimum"], ["custom", "Custom"]], \zero, {en: "value at the center: zero ( lower if the data goes negative ), the smallest value in the data, or the custom minimum", "zh-TW": "圓心代表的數值：0 ( 資料有負值時會更低 )、資料中的最小值，或自訂最小值"}
+        min-value: number "Custom minimum", 0, -1e12, 1e12, 0.01, {en: "value at the center when the minimum is custom", "zh-TW": "最小值選「自訂」時圓心代表的數值"}
+        max: choice "Maximum", [["auto", "Auto"], ["custom", "Custom"]], \auto, {en: "value at the outer ring: taken from the data, or the custom maximum", "zh-TW": "最外圈代表的數值：依資料決定，或使用自訂最大值"}
+        max-value: number "Custom maximum", 100, -1e12, 1e12, 0.01, {en: "value at the outer ring when the maximum is custom", "zh-TW": "最大值選「自訂」時最外圈代表的數值"}
+        nice: bool "Round to nice values", true, {en: "widen the range so every ring falls on a round number; not applied with a custom maximum", "zh-TW": "把範圍擴大到每一圈都落在整齊的數字上；自訂最大值時不作用"}
       series:
-        fill-opacity: number "Fill opacity", 0.16, 0, 1, 0.01
-        stroke-width: number "Line width", 2, 0, 20, 0.5
-        curve: choice "Line", [<[linear Straight]>, <[curve Curve]>], \linear
-        missing: choice "Missing values", [["gap", "Leave a gap"], ["skip", "Connect neighbors"], ["zero", "Treat as minimum"]], \gap
+        fill-opacity: number "Fill opacity", 0.16, 0, 1, 0.01, {en: "opacity of the area filled inside each series ( 0 to 1 )", "zh-TW": "每個系列內部填色的不透明度 ( 0 到 1 )"}
+        stroke-width: number "Line width", 2, 0, 20, 0.5, {en: "width of the outline of each series ( px )", "zh-TW": "每個系列外框線的寬度 ( px )"}
+        curve: choice "Line", [<[linear Straight]>, <[curve Curve]>], \linear, {en: "connect the points with straight lines or a smooth curve", "zh-TW": "資料點之間用直線或平滑曲線連接"}
+        missing: choice "Missing values", [["gap", "Leave a gap"], ["skip", "Connect neighbors"], ["zero", "Treat as minimum"]], \gap, {en: "how an empty value is drawn: leave a gap breaks the outline there, connect neighbors joins the points on either side, treat as minimum puts the point at the center", "zh-TW": "空值怎麼畫：留空斷開會在該處斷開外框，連接相鄰點直接連起兩側的點，視為最小值把點放在圓心"}
       dot:
-        show: bool "Show", true
-        size: number "Size", 3, 0.5, 30, 0.5
+        show: bool "Show", true, {en: "draw a dot at each data point", "zh-TW": "在每個資料點畫一個圓點"}
+        size: number "Size", 3, 0.5, 30, 0.5, {en: "radius of the dots, reduced when the axes are crowded ( px )", "zh-TW": "圓點的半徑，軸很多時會自動縮小 ( px )"}
         fill:
           type: \color, name: N("Fill"), default: \auto, presets: <[auto]>
+          desc: {en: "fill color of the dots; auto uses the series color", "zh-TW": "圓點的填色；auto 使用系列的顏色"}
           i18n: en: {"auto": "Auto"}, "zh-TW": {"auto": "自動"}
       animation:
-        enabled: bool "Enabled", true
-        duration: number "Duration (ms)", 500, 0, 5000, 10
+        enabled: bool "Enabled", true, {en: "animate changes; when off, the chart redraws at once", "zh-TW": "變動時以動畫過渡；關閉則直接重畫"}
+        duration: number "Duration (ms)", 500, 0, 5000, 10, {en: "length of each transition ( ms )", "zh-TW": "每次過渡動畫的長度 ( 毫秒 )"}
         # chart.anim 的 ease 表是駝峰的 key
-        ease: choice "Easing", [["cubicInOut", "Ease in-out"], ["cubicOut", "Ease out"], ["linear", "Linear"]], \cubicInOut
+        ease: choice "Easing", [["cubicInOut", "Ease in-out"], ["cubicOut", "Ease out"], ["linear", "Linear"]], \cubicInOut, {en: "speed curve of the transitions", "zh-TW": "過渡動畫的速度變化曲線"}
     c
   dimension:
     name: {type: \NCO, name: "axis", priority: 1}
