@@ -266,6 +266,18 @@ mod = ({context, t}) ->
         # chart.anim 的 ease 表是駝峰的 key
         ease: choice "Easing", [["cubicInOut", "Ease in-out"], ["cubicOut", "Ease out"], ["linear", "Linear"]], \cubicInOut, {en: "speed curve of the transitions", "zh-TW": "過渡動畫的速度變化曲線"}
     c
+  # 段落 ( tab ) 的說明, key 是段落的路徑. preset 的段落由 chart.utils.config.tabinfo 掛上來, 共用的 common 由核心補.
+  # axis 是雷達圖自己的放射軸線, 不是 preset 的 axis
+  tabinfo: chart.utils.config.tabinfo({legend: \legend, tip: \tip}) <<<
+    grid: desc: {en: "the rings around the center that mark the values", "zh-TW": "圍繞圓心、標示數值的格線圈"}
+    axis: desc: {en: "the lines from the center out to each axis", "zh-TW": "從圓心連到各軸的放射線"}
+    label: desc: {en: "the axis names around the grid", "zh-TW": "格線外圍的各軸名稱"}
+    tick: desc: {en: "the value of each ring, shown along the first axis", "zh-TW": "沿著第一個軸標出的每一圈數值"}
+    orientation: desc: {en: "where the first axis points and which way the others go around", "zh-TW": "第一個軸的方向，以及其它軸繞行的方向"}
+    domain: desc: {en: "the value range from the center to the outer ring", "zh-TW": "從圓心到最外圈的數值範圍"}
+    series: desc: {en: "the shape of each series: fill, outline and how missing values are drawn", "zh-TW": "每個系列的形狀：填色、外框與空值的畫法"}
+    dot: desc: {en: "dots at the data points", "zh-TW": "資料點上的圓點"}
+    animation: desc: {en: "transitions when the data or settings change", "zh-TW": "資料或設定變動時的過渡動畫"}
   dimension:
     name: {type: \NCO, name: "axis", priority: 1}
     value: {type: \R, name: "value", multiple: true, priority: 2}
